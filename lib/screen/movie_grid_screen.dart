@@ -15,8 +15,6 @@ class MovieGridScreen extends ConsumerStatefulWidget {
 class _MovieGridScreenState extends ConsumerState<MovieGridScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-
-
   @override
   void initState() {
     super.initState();
@@ -36,10 +34,10 @@ class _MovieGridScreenState extends ConsumerState<MovieGridScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final searchQuery = ref.watch(searchQueryProvider);
-    final moviesAsync = searchQuery.trim().isEmpty
-        ? ref.watch(cachedMoviesProvider)
-        : ref.watch(movieListProvider);
-
+    final moviesAsync =
+        searchQuery.trim().isEmpty
+            ? ref.watch(cachedMoviesProvider)
+            : ref.watch(movieListProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -81,7 +79,8 @@ class _MovieGridScreenState extends ConsumerState<MovieGridScreen> {
                 controller: _searchController,
                 onChanged:
                     (value) =>
-                        ref.read(searchQueryProvider.notifier).state = value,
+                        ref.read(searchQueryProvider.notifier).state =
+                            value.trim(),
                 onFieldSubmitted: (_) => ref.refresh(movieListProvider),
                 style: TextStyle(color: Colors.white),
                 cursorColor: Colors.white,
@@ -100,11 +99,9 @@ class _MovieGridScreenState extends ConsumerState<MovieGridScreen> {
                   ),
 
                   focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                      borderSide: BorderSide(
-                          color: Colors.white
-                      )
-                  )
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
                 ),
               ),
               SizedBox(height: 16),
@@ -117,101 +114,99 @@ class _MovieGridScreenState extends ConsumerState<MovieGridScreen> {
                     ref.invalidate(cachedMoviesProvider);
                   },
                   child: moviesAsync.when(
-                    data:
-                        (movies)
-                        {
-                          if (movies.isEmpty && _searchController.text.trim().isEmpty) {
-                            return SingleChildScrollView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              child: SizedBox(
-                                height: MediaQuery.of(context).size.height * 0.6,
-                                child: Center(
-                                  child: Image.asset(
-                                    'assets/no_movies_found.png',
-                                    width: 220,
+                    data: (movies) {
+                      if (movies.isEmpty &&
+                          _searchController.text.trim().isEmpty) {
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: Center(
+                              child: Image.asset(
+                                'assets/no_movies_found.png',
+                                width: 220,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return GridView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.48,
+                            ),
+                        itemCount: movies.length,
+                        itemBuilder: (context, index) {
+                          final movie = movies[index];
+                          return GestureDetector(
+                            onTap:
+                                () => Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    transitionDuration: const Duration(
+                                      milliseconds: 1000,
+                                    ),
+                                    pageBuilder:
+                                        (_, __, ___) => MovieDetailScreen(
+                                          imdbID: movie['imdbID'],
+                                        ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }
-                          return GridView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 0.48,
-                          ),
-                          itemCount: movies.length,
-                          itemBuilder: (context, index) {
-                            final movie = movies[index];
-                            return GestureDetector(
-                              onTap:
-                                  () =>
-                                  Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      transitionDuration: const Duration(
-                                        milliseconds: 1000,
-                                      ),
-                                      pageBuilder:
-                                          (_, __, ___) =>
-                                          MovieDetailScreen(
-                                            imdbID: movie['imdbID'],
-                                          ),
+                            child: Column(
+                              // mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Hero(
+                                  tag: movie['imdbID'],
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: FadeInImage.assetNetwork(
+                                      height: 150,
+                                      width: double.infinity,
+                                      placeholder: 'assets/placeholder.png',
+                                      // Add a placeholder asset
+                                      image:
+                                          movie['Poster'] != 'N/A'
+                                              ? movie['Poster']
+                                              : 'assets/placeholder.png',
+                                      fit: BoxFit.cover,
+                                      imageErrorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Image.asset(
+                                                'assets/placeholder.png',
+                                                height: 150,
+                                                fit: BoxFit.cover,
+                                              ),
                                     ),
                                   ),
-                              child: Column(
-                                // mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Hero(
-                                    tag: movie['imdbID'],
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: FadeInImage.assetNetwork(
-                                        height: 150,
-                                        width: double.infinity,
-                                        placeholder: 'assets/placeholder.png',
-                                        // Add a placeholder asset
-                                        image:
-                                        movie['Poster'] != 'N/A'
-                                            ? movie['Poster']
-                                            : 'assets/placeholder.png',
-                                        fit: BoxFit.cover,
-                                        imageErrorBuilder:
-                                            (context, error, stackTrace) =>
-                                            Image.asset(
-                                              'assets/placeholder.png',
-                                              height: 150,
-                                              fit: BoxFit.cover,
-                                            ),
-                                      ),
-                                    ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  movie['Title'] ?? 'N/A',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    movie['Title'] ?? 'N/A',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    textAlign: TextAlign.start,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.start,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  movie['Year'],
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: Colors.white,
                                   ),
-                                  Text(
-                                    movie['Year'],
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );},
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
                     loading:
                         () => GridView.builder(
                           gridDelegate:
@@ -234,13 +229,41 @@ class _MovieGridScreenState extends ConsumerState<MovieGridScreen> {
                                 ),
                               ),
                         ),
-                    error:
-                        (err, stack) => Center(
-                          child: Text(
-                            'Error: $err',
-                            style: const TextStyle(color: Colors.red),
+                    error: (err, stack) {
+                      String errorMessage = err.toString().trim();
+                      return SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset(
+                                  'assets/offline.png',
+                                  height: 120,
+                                  fit: BoxFit.contain,
+                                ),
+                                const SizedBox(height: 12),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24.0,
+                                  ),
+                                  child: Text(
+                                    errorMessage,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
+                      );
+                    },
                   ),
                 ),
               ),
